@@ -48,13 +48,13 @@ def train():
     학습전 모델 및 펼요 요소 선언
     '''
 
-    model = CLFModel()
+    model = CLFModel(image_size=256)
     criterion = CLFcriterion()
-    es = EarlyStopping(patience = 1000, mode='min', delta = 1e-6)
+    es = EarlyStopping(patience = 50, mode='min', delta = 1e-6)
     device = 'cuda' if torch.cuda.is_available() else 'epu'
     optimizer = optim.Adam(model.parameters(), lr = 1e-3)
 
-    target_epochs = 99999
+    target_epochs = 1000
 
     scaler = GradScaler()
     model.to(device)
