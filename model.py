@@ -3,7 +3,7 @@ from torch import nn
 import timm
 
 class CLFModel(nn.Module):
-    def __init__(self):
+    def __init__(self, image_size):
         super().__init__()
         model = timm.create_model("resnetv2_101x1_bit.goog_in21k", pretrained=True)
         self.stem = model.stem
@@ -20,7 +20,7 @@ class CLFModel(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(0.2),
-            nn.Conv2d(in_channels=2048, out_channels=396, kernel_size=(8, 8), padding=(0, 0)),
+            nn.Conv2d(in_channels=2048, out_channels=396, kernel_size=(int(image_size/32), int(image_size/32)), padding=(0, 0)),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
