@@ -12,6 +12,11 @@ class CLFModel(nn.Module):
         self.stages2 = model.stages[2]
         self.stages3 = model.stages[3]
         self.norm = model.norm
+        self.attention = nn.Sequential(
+            nn.Conv2d(256, 128, 1),
+            nn.ReLU(),
+            nn.Conv2d(128, 1, 1)
+        )
 
         self.classifier = nn.Sequential(
             nn.Dropout(0.2),
@@ -21,9 +26,18 @@ class CLFModel(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.stem(x)
         x = self.stages0(x)
-        x = self.stages1(x)
-        x = self.stages2(x)
+        low_f = self.stages1(x)
+
+        attention = self.attention(low_f)
+
+        x = self.stages2(low_f)
         x = self.stages3(x)
-        x = self.norm(x)
+        high_f = self.norm(x)
+
+        attention = torch.sigmoid(attention)
+        attention = nn.functional.interpolate(attention, high_f.shape[2:], mode='bilinear', align_corners=False)
+
+        x = high_f * attention
+
         x = self.classifier(x)
         return x
