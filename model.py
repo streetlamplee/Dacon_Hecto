@@ -37,7 +37,7 @@ class CLFModel(nn.Module):
         attention = torch.sigmoid(attention)
         attention = nn.functional.interpolate(attention, high_f.shape[2:], mode='bilinear', align_corners=False)
 
-        x = high_f * attention
+        x = high_f * attention + high_f
 
         x = self.classifier(x)
         return x
