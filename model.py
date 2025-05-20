@@ -1,0 +1,29 @@
+import torch
+from torch import nn
+import timm
+
+class CLFModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        model = timm.create_model("resnetv2_101x1_bit.goog_in21k", pretrained=True)
+        self.stem = model.stem
+        self.stages0 = model.stages[0]
+        self.stages1 = model.stages[1]
+        self.stages2 = model.stages[2]
+        self.stages3 = model.stages[3]
+        self.norm = model.norm
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.2),
+            nn.Conv2d(in_channels=2048, out_channels=396, kernel_size=(8, 8), padding=(0, 0)),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.stem(x)
+        x = self.stages0(x)
+        x = self.stages1(x)
+        x = self.stages2(x)
+        x = self.stages3(x)
+        x = self.norm(x)
+        x = self.classifier(x)
+        return x
